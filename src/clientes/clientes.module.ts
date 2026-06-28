@@ -6,7 +6,12 @@ import { ClientesService } from './clientes.service';
 import { Cliente } from './entities/cliente.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cliente]), HttpModule],
+  imports: [
+    TypeOrmModule.forFeature([Cliente]),
+    // Header por defecto en cada llamada saliente: autentica este microservicio ante
+    // los demás (que validan INTERNAL_SECRET con su InternalAuthGuard).
+    HttpModule.register({ headers: { 'x-internal-secret': process.env.INTERNAL_SECRET ?? '' } }),
+  ],
   controllers: [ClientesController],
   providers: [ClientesService],
   exports: [ClientesService],
