@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Put, Patch, Body, Param, Query,
+  Controller, Get, Post, Put, Patch, Delete, Body, Param, Query,
   ParseIntPipe, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ClientesService } from './clientes.service';
@@ -47,11 +47,17 @@ export class ClientesController {
     return this.clientesService.update(id, dto);
   }
 
-  @Patch(':id') 
+  @Patch(':id')
   updateEstado(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateEstadoClienteDto,
   ) {
     return this.clientesService.updateEstado(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.clientesService.remove(id);
   }
 }

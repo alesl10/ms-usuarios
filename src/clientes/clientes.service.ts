@@ -72,6 +72,30 @@ export class ClientesService {
     return this.clienteRepo.save(cliente);
   }
 
+  // No se permite borrar un cliente con reservas (dueño: api-turnos). Las reservas no tienen FK a
+  // clientes (acoplamiento débil entre microservicios), así que la integridad se valida acá.
+  async remove(id: number) {
+    await this.findOne(id);
+
+    let reservas: any[];
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get(`${this.turnosUrl}/reservas`, { params: { clienteId: id } }),
+      );
+      reservas = Array.isArray(data) ? data : [];
+    } catch {
+      throw new ServiceUnavailableException(
+        'No se pudo verificar las reservas del cliente; intentá más tarde',
+      );
+    }
+
+    if (reservas.length > 0) {
+      throw new ConflictException('No se puede eliminar un cliente con reservas asociadas');
+    }
+
+    await this.clienteRepo.delete(id);
+  }
+
   // Estadísticas derivadas de las reservas (dueño: api-turnos). No se almacenan en el cliente.
   async getEstadisticas(id: number) {
     await this.findOne(id);
